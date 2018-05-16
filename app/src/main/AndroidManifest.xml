@@ -17,7 +17,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"></activity>
+        <activity android:name=".MainActivity" />
         <activity
             android:name=".LoginActivity"
             android:label="@string/title_activity_login" />
@@ -28,7 +28,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".OpenSessionActivity"></activity>
+        <activity android:name=".CreateSessionActivity" />
+        <activity
+            android:name=".VotingActivity"
+            android:label="@string/title_activity_voting"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
