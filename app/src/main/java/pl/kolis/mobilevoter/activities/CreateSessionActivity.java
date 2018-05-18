@@ -1,4 +1,4 @@
-package pl.kolis.mobilevoter;
+package pl.kolis.mobilevoter.activities;
 
 import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
@@ -21,6 +21,10 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import mobi.upod.timedurationpicker.TimeDurationPicker;
+import mobi.upod.timedurationpicker.TimeDurationPickerDialog;
+import pl.kolis.mobilevoter.R;
+import pl.kolis.mobilevoter.utilities.Constants;
 
 public class CreateSessionActivity extends AppCompatActivity {
     private static final String TAG = CreateSessionActivity.class.getName();
@@ -34,12 +38,14 @@ public class CreateSessionActivity extends AppCompatActivity {
     EditText question;
     @BindView(R.id.open_checkbox)
     CheckBox openSession;
-    @BindView(R.id.timeDurationButton)
+    @BindView(R.id.time_duration_button)
     Button timeButton;
     @BindView(R.id.confirm_create_fab)
     FloatingActionButton create;
 
-    ArrayList<String> mAnswers = new ArrayList<>();
+    private String mQuestion;
+    private ArrayList<String> mAnswers = new ArrayList<>();
+    private long mDurationMs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,11 +55,32 @@ public class CreateSessionActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+    }
+
+    @OnClick(R.id.time_duration_button)
+    public void onDurationClick() {
+        TimeDurationPickerDialog timeDurationPickerDialog = new TimeDurationPickerDialog(this,
+                new TimeDurationPickerDialog.OnDurationSetListener() {
+                    @Override
+                    public void onDurationSet(TimeDurationPicker view, long duration) {
+                        mDurationMs = duration;
+                        formatDurationButton(duration);
+                    }
+                }, mDurationMs);
+        timeDurationPickerDialog.show();
     }
 
     @OnClick(R.id.confirm_create_fab)
-    public void onConfrimClick() {
+    public void onConfirmClick() {
+        mQuestion = question.getText().toString();
+        LinearLayout linearLayout = ((LinearLayout) findViewById(R.id.cards_linear));
+
+        getTextChildren(linearLayout);
         Intent i = new Intent(CreateSessionActivity.this, VotingActivity.class);
+        i.putExtra(Constants.QUESTION, mQuestion);
+        i.putExtra(Constants.ANSWERS, mAnswers);
+        i.putExtra(Constants.DURATION, mDurationMs);
         startActivity(i);
     }
 
@@ -61,9 +88,16 @@ public class CreateSessionActivity extends AppCompatActivity {
         Log.d(TAG, "CLICKED!");
         if(addEmptyAnswerCard()) {
             Button btn = (Button) view;
-            btn.setCompoundDrawablesWithIntrinsicBounds(R.drawable.circle, 0, 0, 0);
-//            view.setVisibility(View.GONE);
+            btn.setCompoundDrawablesWithIntrinsicBounds(R.drawable.baseline_radio_button_unchecked_24, 0, 0, 0);
         }
+    }
+
+    private void formatDurationButton(long millis) {
+        long second = (millis / 1000) % 60;
+        long minute = (millis / (1000 * 60)) % 60;
+        long hour = (millis / (1000 * 60 * 60)) % 24;
+        String time = String.format("Length: %02dh %02dm %02ds", hour, minute, second);
+        timeButton.setText(time);
     }
 
     private boolean validateAnswer(ArrayList<String> textInputEditTexts) {
@@ -74,6 +108,19 @@ public class CreateSessionActivity extends AppCompatActivity {
     private boolean addEmptyAnswerCard() {
         LinearLayout linearLayout = ((LinearLayout) findViewById(R.id.cards_linear));
 
+        getTextChildren(linearLayout);
+
+        if(!(validateAnswer(mAnswers))) {
+            return false;
+        }
+
+        LayoutInflater inflater = getLayoutInflater();
+        View cardLayout = inflater.inflate(R.layout.answer_card_layout, linearLayout, false);
+        linearLayout.addView(cardLayout);
+        return true;
+    }
+
+    private void getTextChildren(LinearLayout linearLayout) {
         ArrayList<View> allViewsWithinMyTopView = getAllChildren(linearLayout);
         mAnswers.clear();
 
@@ -85,15 +132,6 @@ public class CreateSessionActivity extends AppCompatActivity {
                 Log.d(TAG, "Found " + childTextView.getText());
             }
         }
-
-        if(!(validateAnswer(mAnswers))) {
-            return false;
-        }
-
-        LayoutInflater inflater = getLayoutInflater();
-        View myLayout = inflater.inflate(R.layout.answer_card_layout, linearLayout, false);
-        linearLayout.addView(myLayout);
-        return true;
     }
 
     private ArrayList<View> getAllChildren(View v) {

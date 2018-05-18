@@ -26,6 +26,11 @@
                 android:background="@drawable/baseline_add_circle_24"
                 android:onClick="onCardClick"/>
 
+            <ImageView
+                android:id="@+id/unchecked"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

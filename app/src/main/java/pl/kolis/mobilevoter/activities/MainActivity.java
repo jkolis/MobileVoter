@@ -1,4 +1,4 @@
-package pl.kolis.mobilevoter;
+package pl.kolis.mobilevoter.activities;
 
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -13,7 +13,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import pl.kolis.mobilevoter.R;
+
 public class MainActivity extends AppCompatActivity {
+
+    @BindView(R.id.join_session_btn) Button joinSessionBtn;
 
 
     private static final int REQUEST_ENABLE_BT = 1;
@@ -37,18 +44,26 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        ButterKnife.bind(this);
+
         Button newSessionBtn = (Button) findViewById(R.id.new_session_btn);
         newSessionBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
 //                showSessionDialog();
+//                setUpBluetooth();
                 Intent intent = new Intent(MainActivity.this, CreateSessionActivity.class);
                 startActivity(intent);
             }
         });
 
 
+    }
+
+    @OnClick(R.id.join_session_btn)
+    public void test() {
+        setUpBluetooth();
     }
 
     private void setUpBluetooth() {
@@ -62,7 +77,8 @@ public class MainActivity extends AppCompatActivity {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             IntentFilter filterBT = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-            registerReceiver(mBroadcastReceiver, filterBT);
+            registerReceiver(mBroadcastReceiver, filterBT); //TODO context
+            //TODO unregister
 //            BluetoothHost bluetoothHost = new BluetoothHost(mBluetoothAdapter); //TODO to przy naciśnieciu start session
 
         }
@@ -94,6 +110,15 @@ public class MainActivity extends AppCompatActivity {
         alert.show();
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mBroadcastReceiver);
+    }
 }
 

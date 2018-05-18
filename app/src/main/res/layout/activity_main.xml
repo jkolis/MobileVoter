@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="pl.kolis.mobilevoter.MainActivity">
+    tools:context="pl.kolis.mobilevoter.activities.MainActivity">
 
     <Button
         android:id="@+id/new_session_btn"

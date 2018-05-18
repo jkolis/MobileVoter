@@ -1,4 +1,4 @@
-package pl.kolis.mobilevoter;
+package pl.kolis.mobilevoter.activities;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -31,6 +31,8 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import pl.kolis.mobilevoter.R;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
