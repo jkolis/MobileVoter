@@ -1,4 +1,4 @@
-package pl.kolis.mobilevoter;
+package bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
@@ -6,26 +6,32 @@ import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
  * Created by asica on 15.05.18.
  */
 
-public class BluetoothHost {
+public class BluetoothServer {
 
-    private static final String TAG = "BluetoothHost";
+    //TODO dicoverable
+
+    private static final String TAG = "BluetoothServer";
     private static final String NAME ="Test";
     private static final UUID MY_UUID = UUID.fromString("04E78CB0-1084-11E6-A837-0800200C9A66");
 
-    private AcceptThread acceptThread;
+    private List<ConnectedThread> mConnectedThreads;
 
     private BluetoothAdapter mBluetoothAdapter;
 
-    public BluetoothHost(BluetoothAdapter mBluetoothAdapter) {
+    public BluetoothServer(BluetoothAdapter mBluetoothAdapter) {
         this.mBluetoothAdapter = mBluetoothAdapter;
-        acceptThread = new AcceptThread();
-        acceptThread.start();
+        mConnectedThreads = new ArrayList<>();
+//        acceptThread.start();
     }
 
     private class AcceptThread extends Thread {
@@ -59,12 +65,12 @@ public class BluetoothHost {
                 if (socket != null) {
                     // A connection was accepted. Perform work associated with
                     // the connection in a separate thread.
-//                    manageMyConnectedSocket(socket);
-                    try {
-                        mmServerSocket.close(); //TODO
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    manageMyConnectedSocket(socket);
+//                    try {
+//                        mmServerSocket.close();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
                     break;
                 }
             }
@@ -78,5 +84,23 @@ public class BluetoothHost {
                 Log.e(TAG, "Could not close the connect socket", e);
             }
         }
+    }
+
+    private class ConnectedThread extends Thread {
+
+        private InputStream mIn;
+        private OutputStream mOut;
+
+        @Override
+        public void run() {
+            super.run();
+            //TODO reading writing
+        }
+    }
+
+    private void manageMyConnectedSocket(BluetoothSocket socket) {
+        ConnectedThread connectedThread = new ConnectedThread();
+        mConnectedThreads.add(connectedThread);
+        connectedThread.start();
     }
 }

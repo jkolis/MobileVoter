@@ -32,7 +32,8 @@
         <activity
             android:name=".activities.VotingActivity"
             android:label="@string/title_activity_voting"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".activities.ClientVotingActivity"></activity>
     </application>
 
 </manifest>

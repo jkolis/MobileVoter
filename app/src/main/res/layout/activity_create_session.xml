@@ -44,7 +44,7 @@
                 android:text="@string/open_session" />
 
             <EditText
-                android:id="@+id/questionText"
+                android:id="@+id/question_text"
                 style="@style/Widget.AppCompat.EditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -70,7 +70,7 @@
                 style="@style/Widget.AppCompat.Button.Borderless"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/questionText"
+                android:layout_below="@id/question_text"
                 android:text="@string/duration"
                 android:textAllCaps="false" />
 

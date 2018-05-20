@@ -34,7 +34,7 @@ public class CreateSessionActivity extends AppCompatActivity {
     CardView cardView;
     @BindView(R.id.add_answer_btn)
     Button addBtn;
-    @BindView(R.id.questionText)
+    @BindView(R.id.question_text)
     EditText question;
     @BindView(R.id.open_checkbox)
     CheckBox openSession;
