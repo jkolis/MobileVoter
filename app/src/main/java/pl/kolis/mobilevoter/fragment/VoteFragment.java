@@ -47,7 +47,6 @@ public class VoteFragment extends Fragment {
         mQuestion = getArguments().getString(Constants.QUESTION);
         mDuration = getArguments().getInt(Constants.DURATION);
         setupRecyclerView();
-        setupCounter();
 
         return view;
     }
@@ -59,7 +58,7 @@ public class VoteFragment extends Fragment {
         mAnswersRV.setAdapter(mAdapter);
     }
 
-    private void setupCounter() {
+    public void setupCounter() {
         CountDownTimer c = new CountDownTimer(mDuration, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -72,8 +71,8 @@ public class VoteFragment extends Fragment {
             @Override
             public void onFinish() {
                 Log.d(TAG, "TIME EXPIRED");
-//                timeText.setText(R.string.done);
-                adapter.setPollComplete();
+                mDurationCountText.setText("TIME'S UP");
+//                adapter.setPollComplete();
             }
         };
         c.start();

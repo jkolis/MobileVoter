@@ -3,18 +3,28 @@ package bluetooth;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.os.Handler;
 import android.util.Log;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
 public class BluetoothClient {
 
     private static final String TAG = BluetoothClient.class.getName();
-    private static final String NAME ="Test";
+    private static final String NAME = "Test";
     private static final UUID MY_UUID = UUID.fromString("04E78CB0-1084-11E6-A837-0800200C9A66");
 
     private BluetoothAdapter mBluetoothAdapter;
+    private Handler mHandler;
+
+    public BluetoothClient(BluetoothDevice device, Handler handler) {
+        mHandler = handler;
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        ConnectThread connectThread = new ConnectThread(device);
+        connectThread.start();
+    }
 
     private class ConnectThread extends Thread {
         private final BluetoothSocket mmSocket;
@@ -54,9 +64,19 @@ public class BluetoothClient {
                 return;
             }
 
+            Log.d(TAG, "connected");
             // The connection attempt succeeded. Perform work associated with
             // the connection in a separate thread.
-//            manageMyConnectedSocket(mmSocket);
+            try {
+                manageMyConnectedSocket();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private void manageMyConnectedSocket() throws UnsupportedEncodingException {
+            MyBluetoothManager btManager = new MyBluetoothManager(mHandler);
+            btManager.startCommunication(mmSocket);
         }
 
         // Closes the client socket and causes the thread to finish.

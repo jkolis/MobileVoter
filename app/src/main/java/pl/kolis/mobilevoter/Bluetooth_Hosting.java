@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.UUID;
 
+import pl.kolis.mobilevoter.utilities.Constants;
+
 // Referenced classes of package android.com.myapplication:
 //            Hosting
 
@@ -332,7 +334,7 @@ public class Bluetooth_Hosting
 //        h = hosting;
         mConnectedThread = new ArrayList();
         btAdapter = BluetoothAdapter.getDefaultAdapter();
-        mUUID = UUID.fromString("04E78CB0-1084-11E6-A837-0800200C9A66");
+        mUUID = Constants.MY_UUID;
 //        hosting.registerReceiver(bluetoothState, new IntentFilter("android.bluetooth.adapter.action.SCAN_MODE_CHANGED"));
     }
 

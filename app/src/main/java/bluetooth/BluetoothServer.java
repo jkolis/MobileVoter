@@ -3,13 +3,11 @@ package bluetooth;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.os.Handler;
 import android.util.Log;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
 /**
@@ -24,14 +22,17 @@ public class BluetoothServer {
     private static final String NAME ="Test";
     private static final UUID MY_UUID = UUID.fromString("04E78CB0-1084-11E6-A837-0800200C9A66");
 
-    private List<ConnectedThread> mConnectedThreads;
+//    private List<ConnectedThread> mConnectedThreads;
 
     private BluetoothAdapter mBluetoothAdapter;
+    private Handler mHandler;
 
-    public BluetoothServer(BluetoothAdapter mBluetoothAdapter) {
+    public BluetoothServer(BluetoothAdapter mBluetoothAdapter, Handler handler) {
         this.mBluetoothAdapter = mBluetoothAdapter;
-        mConnectedThreads = new ArrayList<>();
-//        acceptThread.start();
+        mHandler = handler;
+//        mConnectedThreads = new ArrayList<>();
+        AcceptThread acceptThread = new AcceptThread();
+        acceptThread.start();
     }
 
     private class AcceptThread extends Thread {
@@ -63,9 +64,14 @@ public class BluetoothServer {
                 }
 
                 if (socket != null) {
+                    Log.d(TAG, "connected");
                     // A connection was accepted. Perform work associated with
                     // the connection in a separate thread.
-                    manageMyConnectedSocket(socket);
+                    try {
+                        manageMyConnectedSocket(socket);
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
 //                    try {
 //                        mmServerSocket.close();
 //                    } catch (IOException e) {
@@ -85,22 +91,21 @@ public class BluetoothServer {
             }
         }
     }
+//
+//    private class ConnectedThread extends Thread {
+//
+//        private InputStream mIn;
+//        private OutputStream mOut;
+//
+//        @Override
+//        public void run() {
+//            super.run();
+//            //TODO reading writing
+//        }
+//    }
 
-    private class ConnectedThread extends Thread {
-
-        private InputStream mIn;
-        private OutputStream mOut;
-
-        @Override
-        public void run() {
-            super.run();
-            //TODO reading writing
-        }
-    }
-
-    private void manageMyConnectedSocket(BluetoothSocket socket) {
-        ConnectedThread connectedThread = new ConnectedThread();
-        mConnectedThreads.add(connectedThread);
-        connectedThread.start();
+    private void manageMyConnectedSocket(BluetoothSocket socket) throws UnsupportedEncodingException {
+        MyBluetoothManager btManager = new MyBluetoothManager(mHandler);
+        Thread connectedThread = btManager.startCommunication(socket);
     }
 }

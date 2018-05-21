@@ -8,10 +8,12 @@ import android.widget.Button;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import pl.kolis.mobilevoter.R;
 
 public class MainActivity extends AppCompatActivity {
 
+    @BindView((R.id.new_session_btn)) Button mNewSessionBtn;
     @BindView(R.id.join_session_btn) Button joinSessionBtn;
 
     @Override
@@ -20,17 +22,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         ButterKnife.bind(this);
-
-        Button newSessionBtn = (Button) findViewById(R.id.new_session_btn);
-        newSessionBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent intent = new Intent(MainActivity.this, CreateSessionActivity.class);
-                startActivity(intent);
-            }
-        });
     }
 
+    @OnClick(R.id.new_session_btn)
+    public void newSession() {
+        Intent intent = new Intent(MainActivity.this, CreateSessionActivity.class);
+        startActivity(intent);
+    }
+
+    @OnClick(R.id.join_session_btn)
+    public void joinSession() {
+        Intent i = new Intent(MainActivity.this, ClientVotingActivity.class);
+        startActivity(i);
+    }
 }
 

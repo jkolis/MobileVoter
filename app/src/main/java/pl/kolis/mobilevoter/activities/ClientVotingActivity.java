@@ -1,45 +1,54 @@
 package pl.kolis.mobilevoter.activities;
 
 import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
+import java.io.IOException;
+
+import bluetooth.BluetoothClient;
+import bluetooth.MyBluetoothManager;
 import pl.kolis.mobilevoter.R;
+import pl.kolis.mobilevoter.utilities.Constants;
 
-public class ClientVotingActivity extends AppCompatActivity {
+public class ClientVotingActivity extends AppCompatActivity implements Handler.Callback {
+
+    private static final String TAG = ClientVotingActivity.class.getName();
+    private Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_client_voting);
-        // Register for broadcasts when a device is discovered.
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(mReceiver, filter);
-    }
 
-    // Create a BroadcastReceiver for ACTION_FOUND.
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                // Discovery has found a device. Get the BluetoothDevice
-                // object and its info from the Intent.
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                String deviceName = device.getName();
-                String deviceHardwareAddress = device.getAddress(); // MAC address
-            }
-        }
-    };
+        mHandler = new Handler(this);
+
+        Intent i = new Intent(ClientVotingActivity.this, DeviceListActivity.class);
+        startActivityForResult(i, Constants.PICK_DEVICE);
+
+
+    }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constants.PICK_DEVICE && resultCode == RESULT_OK) {
+            BluetoothDevice device = data.getParcelableExtra(Constants.DEVICE);
 
-        // Don't forget to unregister the ACTION_FOUND receiver.
-        unregisterReceiver(mReceiver);
+            Log.d(TAG, "You choose " + device.getName());
+            new BluetoothClient(device, mHandler);
+        }
+    }
+
+    @Override
+    public boolean handleMessage(Message message) {
+        Log.d(TAG, "message " + message.toString());
+        return false;
     }
 }
+

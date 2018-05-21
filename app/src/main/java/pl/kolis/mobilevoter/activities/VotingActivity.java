@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -24,6 +26,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import bluetooth.BluetoothServer;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -32,9 +35,10 @@ import pl.kolis.mobilevoter.fragment.StatsFragment;
 import pl.kolis.mobilevoter.fragment.VoteFragment;
 import pl.kolis.mobilevoter.utilities.Constants;
 
-public class VotingActivity extends AppCompatActivity {
+public class VotingActivity extends AppCompatActivity implements Handler.Callback {
 
     private static final String TAG = VotingActivity.class.getName();
+    private Handler mHandler;
     @BindView(R.id.fab_start)
     FloatingActionButton startFab;
 
@@ -53,6 +57,7 @@ public class VotingActivity extends AppCompatActivity {
             }
         }
     };
+    private VoteFragment mVotingFragment;
 
     private void showBTSnackbar() {
         Snackbar snackbar = Snackbar.make(findViewById(R.id.main_content), "Turn on BT!", Snackbar.LENGTH_INDEFINITE);
@@ -94,7 +99,8 @@ public class VotingActivity extends AppCompatActivity {
         Intent i = getIntent();
         mQuestion = i.getStringExtra(Constants.QUESTION);
         mAnwers = i.getStringArrayListExtra(Constants.ANSWERS);
-        mDuration = i.getIntExtra(Constants.DURATION, 0);
+        long dur = i.getLongExtra(Constants.DURATION, 0);
+        mDuration = (int) dur;
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -111,6 +117,7 @@ public class VotingActivity extends AppCompatActivity {
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
 
+        mHandler = new Handler(this);
 
 //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 //        fab.setOnClickListener(new View.OnClickListener() {
@@ -136,8 +143,10 @@ public class VotingActivity extends AppCompatActivity {
         if (!mBluetoothAdapter.isEnabled()) {
             showBTSnackbar();
             requestVisibility();
+
         }
         view.setVisibility(View.GONE);
+        beginSession();
     }
 
     private void turnOnBluetooth() {
@@ -169,7 +178,8 @@ public class VotingActivity extends AppCompatActivity {
     }
 
     private void beginSession() {
-
+        new BluetoothServer(mBluetoothAdapter, mHandler);
+        mVotingFragment.setupCounter();
     }
 
 
@@ -195,6 +205,16 @@ public class VotingActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public boolean handleMessage(Message message) {
+//        String msg = "";
+//        if (message.what == 1) {
+//            msg = new String((byte[])message.obj);
+//        }
+//        Log.d(TAG, "message " + msg);
+        return false;
+    }
+
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -216,9 +236,9 @@ public class VotingActivity extends AppCompatActivity {
                     bundle.putStringArrayList(Constants.ANSWERS, mAnwers);
                     bundle.putString(Constants.QUESTION, mQuestion);
                     bundle.putInt(Constants.DURATION, mDuration);
-                    Fragment f = new VoteFragment();
-                    f.setArguments(bundle);
-                    return f;
+                    mVotingFragment = new VoteFragment();
+                    mVotingFragment.setArguments(bundle);
+                    return mVotingFragment;
                 case 1:
                     return new StatsFragment();
             }
@@ -230,5 +250,9 @@ public class VotingActivity extends AppCompatActivity {
             // Show 2 total pages.
             return 2;
         }
+    }
+
+    public void onNewVoter() {
+
     }
 }
