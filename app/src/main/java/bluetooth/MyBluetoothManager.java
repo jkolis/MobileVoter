@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
+import pl.kolis.mobilevoter.utilities.Constants;
+
 public class MyBluetoothManager {
 
     public MyBluetoothManager(Handler mHandler) {
@@ -22,13 +24,6 @@ public class MyBluetoothManager {
 
     // Defines several constants used when transmitting messages between the
     // service and the UI.
-    private interface MessageConstants {
-        public static final int MESSAGE_READ = 0;
-        public static final int MESSAGE_WRITE = 1;
-        public static final int MESSAGE_TOAST = 2;
-
-        // ... (Add other message types here as needed.)
-    }
 
     private class ConnectedThread extends Thread {
         private final BluetoothSocket mmSocket;
@@ -69,7 +64,7 @@ public class MyBluetoothManager {
                     numBytes = mmInStream.read(mmBuffer);
                     // Send the obtained bytes to the UI activity.
                     Message readMsg = mHandler.obtainMessage(
-                            MessageConstants.MESSAGE_READ, numBytes, -1,
+                            Constants.MESSAGE_READ, numBytes, -1,
                             mmBuffer);
                     readMsg.sendToTarget();
                 } catch (IOException e) {
@@ -86,14 +81,14 @@ public class MyBluetoothManager {
 
                 // Share the sent message with the UI activity.
                 Message writtenMsg = mHandler.obtainMessage(
-                        MessageConstants.MESSAGE_WRITE, -1, -1, mmBuffer);
+                        Constants.MESSAGE_WRITE, -1, -1, mmBuffer);
                 writtenMsg.sendToTarget();
             } catch (IOException e) {
                 Log.e(TAG, "Error occurred when sending data", e);
 
                 // Send a failure message back to the activity.
                 Message writeErrorMsg =
-                        mHandler.obtainMessage(MessageConstants.MESSAGE_TOAST);
+                        mHandler.obtainMessage(Constants.MESSAGE_TOAST);
                 Bundle bundle = new Bundle();
                 bundle.putString("toast",
                         "Couldn't send data to the other device");
@@ -115,7 +110,7 @@ public class MyBluetoothManager {
     public ConnectedThread startCommunication(BluetoothSocket socket) throws UnsupportedEncodingException {
         ConnectedThread connectedThread = new ConnectedThread(socket);
         connectedThread.start();
-        connectedThread.write("hello".getBytes("UTF-8"));
+//        connectedThread.write("hello".getBytes("UTF-8"));
         return connectedThread;
     }
 

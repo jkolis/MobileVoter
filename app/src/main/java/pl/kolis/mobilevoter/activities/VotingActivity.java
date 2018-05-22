@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
@@ -58,6 +57,7 @@ public class VotingActivity extends AppCompatActivity implements Handler.Callbac
         }
     };
     private VoteFragment mVotingFragment;
+    private BluetoothServer mBluetoothServer;
 
     private void showBTSnackbar() {
         Snackbar snackbar = Snackbar.make(findViewById(R.id.main_content), "Turn on BT!", Snackbar.LENGTH_INDEFINITE);
@@ -131,7 +131,6 @@ public class VotingActivity extends AppCompatActivity implements Handler.Callbac
     }
 
 
-
     @OnClick(R.id.fab_start)
     public void startSession(View view) {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -140,13 +139,18 @@ public class VotingActivity extends AppCompatActivity implements Handler.Callbac
                     "Application is terminated", Toast.LENGTH_LONG).show();
             return; //TODO
         }
-        if (!mBluetoothAdapter.isEnabled()) {
-            showBTSnackbar();
+        if (mBluetoothAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+            Log.d(TAG, "BT not visible");
+//            showBTSnackbar();
             requestVisibility();
-
+            beginSession();
         }
-        view.setVisibility(View.GONE);
-        beginSession();
+        if (mBluetoothAdapter.getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+            //TODO
+            Log.d(TAG, "BT not visible");
+            view.setVisibility(View.GONE);
+            beginSession();
+        }
     }
 
     private void turnOnBluetooth() {
@@ -178,7 +182,14 @@ public class VotingActivity extends AppCompatActivity implements Handler.Callbac
     }
 
     private void beginSession() {
-        new BluetoothServer(mBluetoothAdapter, mHandler);
+        StringBuilder sb = new StringBuilder();
+        sb.append(mQuestion.length()).append(String.valueOf(mDuration).length()).append(mQuestion).append(mDuration);
+        StringBuilder answers = new StringBuilder();
+        for (String s : mAnwers) {
+            answers.append(s).append(",");
+        }
+        sb.append(answers);
+        mBluetoothServer = new BluetoothServer(mBluetoothAdapter, mHandler, this, sb.toString());
         mVotingFragment.setupCounter();
     }
 
@@ -208,9 +219,13 @@ public class VotingActivity extends AppCompatActivity implements Handler.Callbac
     @Override
     public boolean handleMessage(Message message) {
 //        String msg = "";
-//        if (message.what == 1) {
+        Toast.makeText(getApplicationContext(), message.toString(), Toast.LENGTH_LONG).show();
+        if (message.what == Constants.MESSAGE_WRITE) {
+            switch (message.arg1) {
+                //TODO
+            }
 //            msg = new String((byte[])message.obj);
-//        }
+        }
 //        Log.d(TAG, "message " + msg);
         return false;
     }
@@ -236,6 +251,7 @@ public class VotingActivity extends AppCompatActivity implements Handler.Callbac
                     bundle.putStringArrayList(Constants.ANSWERS, mAnwers);
                     bundle.putString(Constants.QUESTION, mQuestion);
                     bundle.putInt(Constants.DURATION, mDuration);
+                    bundle.putBoolean(Constants.IS_CLIENT, true);
                     mVotingFragment = new VoteFragment();
                     mVotingFragment.setArguments(bundle);
                     return mVotingFragment;
@@ -253,6 +269,12 @@ public class VotingActivity extends AppCompatActivity implements Handler.Callbac
     }
 
     public void onNewVoter() {
-
+//        Toast.makeText(getApplicationContext(), "New voter", Toast.LENGTH_LONG).show();
+        mBluetoothServer.send(mQuestion, Constants.QUESTION_MSG);
+        StringBuilder answers = new StringBuilder();
+        for (String s : mAnwers) {
+            answers.append(s).append(",");
+        }
+        mBluetoothServer.send(answers.toString(), Constants.ANSWERS_MSG);
     }
 }

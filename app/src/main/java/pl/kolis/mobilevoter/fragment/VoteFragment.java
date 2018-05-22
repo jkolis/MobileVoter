@@ -2,6 +2,7 @@ package pl.kolis.mobilevoter.fragment;
 
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,11 +28,16 @@ public class VoteFragment extends Fragment {
     RecyclerView mAnswersRV;
     @BindView(R.id.duration_count)
     TextView mDurationCountText;
+    @BindView(R.id.question_text)
+    TextView mQuestionText;
 
     private VotingAnswerAdapter mAdapter;
     private ArrayList<String> mAnwers;
     private String mQuestion;
     private int mDuration;
+
+    private Handler mHandler;
+
 
     public VoteFragment() {
         // Required empty public constructor
@@ -43,10 +49,13 @@ public class VoteFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_voting_vote, container, false);
         ButterKnife.bind(this, view);
-        mAnwers = getArguments().getStringArrayList(Constants.ANSWERS);
-        mQuestion = getArguments().getString(Constants.QUESTION);
-        mDuration = getArguments().getInt(Constants.DURATION);
-        setupRecyclerView();
+        if (getArguments().getBoolean(Constants.IS_CLIENT)) {
+            mAnwers = getArguments().getStringArrayList(Constants.ANSWERS);
+            mQuestion = getArguments().getString(Constants.QUESTION);
+            mDuration = getArguments().getInt(Constants.DURATION);
+            mQuestionText.setText(mQuestion);
+            setupRecyclerView();
+        }
 
         return view;
     }
@@ -79,4 +88,11 @@ public class VoteFragment extends Fragment {
     }
 
 
+    public void setView(String question, ArrayList<String> anwers, int duration) {
+        mQuestion = question;
+        mAnwers = anwers;
+        mDuration = duration;
+        mQuestionText.setText(mQuestion);
+        setupRecyclerView();
+    }
 }
