@@ -16,9 +16,12 @@ public class Constants {
     public static final int MESSAGE_READ = 0;
     public static final int MESSAGE_WRITE = 1;
     public static final int MESSAGE_TOAST = 2;
-    public static final int QUESTION_MSG = 10;
-    public static final int ANSWERS_MSG = 20;
+    public static final int POLL_MSG = 1;
+    public static final int VOTE_MSG = 2;
     public static final String IS_CLIENT = "show_rv";
+    public static final String FIREBASE_POLL = "poll";
+    public static final String POLL_ID = "poll_id";
+    public static final String VOTES_ARRAY = "votes_array";
 
     public static String EXTRA_DEVICE_ADDRESS = "device_address";
     public static final String DEVICE = "device";

@@ -3,6 +3,7 @@ package pl.kolis.mobilevoter.fragment;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,11 +13,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import pl.kolis.mobilevoter.R;
+import pl.kolis.mobilevoter.activities.FirebaseActivity;
 import pl.kolis.mobilevoter.adapter.VotingAnswerAdapter;
 import pl.kolis.mobilevoter.utilities.Constants;
 
@@ -32,11 +36,12 @@ public class VoteFragment extends Fragment {
     TextView mQuestionText;
 
     private VotingAnswerAdapter mAdapter;
-    private ArrayList<String> mAnwers;
+    private List<String> mAnwers;
     private String mQuestion;
-    private int mDuration;
+    private long mDuration;
 
     private Handler mHandler;
+    private HashMap<String, Integer> mVotes;
 
 
     public VoteFragment() {
@@ -57,14 +62,32 @@ public class VoteFragment extends Fragment {
             setupRecyclerView();
         }
 
+
         return view;
     }
 
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        mVotes = new HashMap<>();
+        if (mAnwers != null) {
+            for (int i = 0; i < mAnwers.size(); i++) {
+                mVotes.put("P"+String.valueOf(i), 0);
+            }
+        }
+    }
+
     public void setupRecyclerView() {
-        mAdapter = new VotingAnswerAdapter(mAnwers);
+        mAdapter = new VotingAnswerAdapter(mAnwers, getContext(), this);
         LinearLayoutManager manager = new LinearLayoutManager(getContext());
         mAnswersRV.setLayoutManager(manager);
         mAnswersRV.setAdapter(mAdapter);
+//        ItemClickSupport.addTo(mAnswersRV)
+//                .setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
+//                    @Override
+//                    public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+//                        Log.d(TAG, "Clicked position: " + position);
+//                    }
+//                });
     }
 
     public void setupCounter() {
@@ -87,12 +110,29 @@ public class VoteFragment extends Fragment {
         c.start();
     }
 
+    public void saveVote(int position) {
+        String posString = String.valueOf( "P" + position);
+//        Integer value = mVotes.get(posString) + 1;
+//        if (value == null) {
+//            posString = "P" + posString;
+//        }
+        if(mVotes.get(posString) != null) {
+            mVotes.put(posString, mVotes.get(posString) + 1);
+        } else {
+            mVotes.put(posString, 1);
+        }
 
-    public void setView(String question, ArrayList<String> anwers, int duration) {
+        FirebaseActivity fa = (FirebaseActivity) getActivity();
+        fa.saveVote(position, mVotes);
+    }
+
+    public void setView(String question, List<String> anwers, long duration, HashMap<String, Integer> votes) {
         mQuestion = question;
         mAnwers = anwers;
         mDuration = duration;
         mQuestionText.setText(mQuestion);
+        mVotes = votes;
         setupRecyclerView();
     }
+
 }

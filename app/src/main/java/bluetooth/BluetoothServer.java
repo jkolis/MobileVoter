@@ -32,8 +32,7 @@ public class BluetoothServer {
     private static final String NAME ="Test";
     private static final UUID MY_UUID = UUID.fromString("04E78CB0-1084-11E6-A837-0800200C9A66");
 
-    private List<ConnectedThread> mConnectedThreads;
-
+    private AcceptThread mAcceptThread;
     private BluetoothAdapter mBluetoothAdapter;
     private Handler mHandler;
     private VotingActivity mActivity;
@@ -44,8 +43,8 @@ public class BluetoothServer {
         mHandler = handler;
         mActivity = activity;
 //        mConnectedThreads = new ArrayList<>();
-        AcceptThread acceptThread = new AcceptThread();
-        acceptThread.start();
+        mAcceptThread = new AcceptThread();
+        mAcceptThread.start();
         mMessage = s;
     }
 
@@ -72,6 +71,7 @@ public class BluetoothServer {
             while (true) {
                 try {
                     socket = mmServerSocket.accept();
+                    Log.d(TAG, "Connection accepted");
                 } catch (IOException e) {
                     Log.e(TAG, "Socket's accept() method failed", e);
                     break;
@@ -207,11 +207,12 @@ public class BluetoothServer {
         connectedThread.start();
 //        connectedThread.write("hello".getBytes("UTF-8"), Constants.QUESTION_MSG);
         connectedThread.write(mMessage.getBytes("UTF-8"));
-        Log.d(TAG, "Poll sent");
+        Log.d(TAG, "Poll sent " + mMessage);
 
     }
 
-    public void send(String text, int code) {
-
+    public void cancel() {
+        mAcceptThread.cancel();
     }
+
 }

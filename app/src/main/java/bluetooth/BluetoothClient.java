@@ -18,12 +18,13 @@ public class BluetoothClient {
 
     private BluetoothAdapter mBluetoothAdapter;
     private Handler mHandler;
+    private ConnectThread mConnectThread;
 
     public BluetoothClient(BluetoothDevice device, Handler handler) {
         mHandler = handler;
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        ConnectThread connectThread = new ConnectThread(device);
-        connectThread.start();
+        mConnectThread = new ConnectThread(device);
+        mConnectThread.start();
     }
 
     private class ConnectThread extends Thread {
@@ -87,5 +88,9 @@ public class BluetoothClient {
                 Log.e(TAG, "Could not close the client socket", e);
             }
         }
+    }
+
+    public void cancel() {
+        mConnectThread.cancel();
     }
 }

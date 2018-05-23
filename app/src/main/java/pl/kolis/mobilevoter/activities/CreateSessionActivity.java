@@ -1,9 +1,9 @@
 package pl.kolis.mobilevoter.activities;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputEditText;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
@@ -15,8 +15,16 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -24,9 +32,11 @@ import butterknife.OnClick;
 import mobi.upod.timedurationpicker.TimeDurationPicker;
 import mobi.upod.timedurationpicker.TimeDurationPickerDialog;
 import pl.kolis.mobilevoter.R;
+import pl.kolis.mobilevoter.database.entity.Question;
 import pl.kolis.mobilevoter.utilities.Constants;
+import pl.kolis.mobilevoter.utilities.Utils;
 
-public class CreateSessionActivity extends AppCompatActivity {
+public class CreateSessionActivity extends FirebaseActivity {
     private static final String TAG = CreateSessionActivity.class.getName();
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -46,6 +56,8 @@ public class CreateSessionActivity extends AppCompatActivity {
     private String mQuestion;
     private ArrayList<String> mAnswers = new ArrayList<>();
     private long mDurationMs;
+    private Question mQuestionEntity;
+    private String mQuestionId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +67,6 @@ public class CreateSessionActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
     }
 
     @OnClick(R.id.time_duration_button)
@@ -71,17 +82,78 @@ public class CreateSessionActivity extends AppCompatActivity {
         timeDurationPickerDialog.show();
     }
 
+    @Override
+    public void gatherDataFromFirebase(Task<AuthResult> task) {
+        mQuestionId = Utils.generateSaltString();
+        mQuestionEntity = new Question(mQuestionId, mQuestion, mAuth.getCurrentUser().getUid(),
+                mAnswers, mDurationMs, new HashMap<String, Integer>(), new HashMap<String, Integer>());
+        mDatabase = FirebaseDatabase
+                .getInstance()
+                .getReference(Constants.FIREBASE_POLL);
+        mDatabase.child(mQuestionId).setValue(mQuestionEntity).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                Intent i = new Intent(CreateSessionActivity.this, VotingActivity.class);
+                i.putExtra(Constants.QUESTION, mQuestion);
+                i.putExtra(Constants.ANSWERS, mAnswers);
+                i.putExtra(Constants.DURATION, mDurationMs);
+                i.putExtra(Constants.POLL_ID, mQuestionId);
+                startActivity(i);
+            }
+        });
+        Toast.makeText(getApplicationContext(), "Saved", Toast.LENGTH_SHORT).show();
+//        Map<String, Object> newQuestion = new HashMap<>();
+//        Map<String, Object> i0 = constructChoice(item0);
+//        Map<String, Object> i1 = constructChoice(item1);
+//        if (!item2.getText().toString().equals("")) {
+//            Map<String, Object> i2 = constructChoice(item2);
+//            newQuestion.put("Item2", i2);
+//        }
+//        if (!item3.getText().toString().equals("")) {
+//            Map<String, Object> i3 = constructChoice(item3);
+//            newQuestion.put("Item3", i3);
+//        }
+//        newQuestion.put("Question", mQuestion);
+//        newQuestion.put("Item0", i0);
+//        newQuestion.put("Item1", i1);
+//        newQuestion.put("OwnerID", mAuth.getCurrentUser().getUid());
+//        newQuestion.put("ExpireTime", millisFromNow(durationInMillis));
+//        mDatabase = FirebaseDatabase.getInstance().getReference("Polls");
+//        pollID = Utils.generateSaltString();
+//        mDatabase.child(pollID).updateChildren(newQuestion).addOnCompleteListener(new OnCompleteListener<Void>() {
+//
+//            @Override
+//            public void onComplete(@NonNull Task<Void> task) {
+//                //Open poll when created
+//                Intent i = new Intent(getApplicationContext(), PollActivity.class);
+//                i.putExtra("pollID", pollID);
+//                i.putExtra("pollQuestion", formattedQuestion);
+//                startActivity(i);
+//                finish();
+//            }
+//        });
+//
+//        //login failure
+//        if (!task.isSuccessful()) {
+//            Log.w("auth", "signInAnonymously", task.getException());
+//            Toast.makeText(CreateActivity.this, "Authentication failed.",
+//                    Toast.LENGTH_SHORT).show();
+//        }
+    }
+
     @OnClick(R.id.confirm_create_fab)
     public void onConfirmClick() {
         mQuestion = question.getText().toString();
         LinearLayout linearLayout = ((LinearLayout) findViewById(R.id.cards_linear));
 
         getTextChildren(linearLayout);
-        Intent i = new Intent(CreateSessionActivity.this, VotingActivity.class);
-        i.putExtra(Constants.QUESTION, mQuestion);
-        i.putExtra(Constants.ANSWERS, mAnswers);
-        i.putExtra(Constants.DURATION, mDurationMs);
-        startActivity(i);
+        signInToFirebase();
+
+//        Intent i = new Intent(CreateSessionActivity.this, VotingActivity.class);
+//        i.putExtra(Constants.QUESTION, mQuestion);
+//        i.putExtra(Constants.ANSWERS, mAnswers);
+//        i.putExtra(Constants.DURATION, mDurationMs);
+//        startActivity(i);
     }
 
     public void onCardClick(View view) {

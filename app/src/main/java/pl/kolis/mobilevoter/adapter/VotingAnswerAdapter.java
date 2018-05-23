@@ -1,8 +1,12 @@
 package pl.kolis.mobilevoter.adapter;
 
+import android.app.Activity;
 import android.content.Context;
+import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,22 +19,33 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import pl.kolis.mobilevoter.R;
+import pl.kolis.mobilevoter.fragment.VoteFragment;
 
 public class VotingAnswerAdapter extends RecyclerView.Adapter<VotingAnswerAdapter.ViewHolder> {
 
-    public List<String> mAnswers;
+    private List<String> mAnswers;
+    private int mSelectedPosition;
+    private Context mContext;
+    private String TAG = VotingAnswerAdapter.class.getName();
+    private boolean mVoted;
+    private VoteFragment mFragment;
 
-    public VotingAnswerAdapter(ArrayList<String> answers) {
+    public VotingAnswerAdapter(List<String> answers, Context context, VoteFragment fragment) {
         mAnswers = answers;
+        mContext = context;
+        mVoted = false;
+        mSelectedPosition = -1;
+        mFragment = fragment;
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
+        private final String TAG = ViewHolder.class.getName();
         @BindView(R.id.choice_card_view)
         CardView card;
         @BindView(R.id.answer)
         TextView mAnswer;
-//        @BindView(R.id.vote_count)
+        //        @BindView(R.id.vote_count)
 //        TextView voteCount;
         @BindView(R.id.checkmark)
         ImageView checkmark;
@@ -41,7 +56,12 @@ public class VotingAnswerAdapter extends RecyclerView.Adapter<VotingAnswerAdapte
             card.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
+                    Log.d(TAG, "Position clicked " + getAdapterPosition());
+                    if (mSelectedPosition != getAdapterPosition() && !mVoted) {
+                        mSelectedPosition = getAdapterPosition();
+                        notifyItemChanged(mSelectedPosition);
+                        mFragment.saveVote(mSelectedPosition);
+                    }
                 }
             });
         }
@@ -50,6 +70,7 @@ public class VotingAnswerAdapter extends RecyclerView.Adapter<VotingAnswerAdapte
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+
         View v = inflater.inflate(R.layout.voting_answer_card, parent, false);
         return new VotingAnswerAdapter.ViewHolder(parent.getContext(), v);
     }
@@ -57,7 +78,15 @@ public class VotingAnswerAdapter extends RecyclerView.Adapter<VotingAnswerAdapte
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         holder.mAnswer.setText(mAnswers.get(position));
+//        holder.
+        Log.d(TAG, "onBindView Holder");
+        if (mSelectedPosition == position) {
+            holder.card.setCardBackgroundColor(ContextCompat.getColor(mContext, R.color.colorAccent));
+            mVoted = true;
+        }
+
     }
+
 
     @Override
     public int getItemCount() {

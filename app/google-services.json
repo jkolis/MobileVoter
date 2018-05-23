@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "643902035797",
+    "firebase_url": "https://mobilevoter-1546.firebaseio.com",
+    "project_id": "mobilevoter-1546",
+    "storage_bucket": "mobilevoter-1546.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:643902035797:android:d466f338fdd31e18",
+        "android_client_info": {
+          "package_name": "pl.kolis.mobilevoter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "643902035797-fcv7h4oaiqe445js1am82pu6b9jnv180.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHL0YUqK8aLue1g-Ww3PNMAYFxFI1zF8I"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

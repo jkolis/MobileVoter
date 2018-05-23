@@ -15,7 +15,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -23,18 +22,29 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import bluetooth.BluetoothServer;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import pl.kolis.mobilevoter.R;
+import pl.kolis.mobilevoter.database.entity.Question;
 import pl.kolis.mobilevoter.fragment.StatsFragment;
 import pl.kolis.mobilevoter.fragment.VoteFragment;
 import pl.kolis.mobilevoter.utilities.Constants;
 
-public class VotingActivity extends AppCompatActivity implements Handler.Callback {
+public class VotingActivity extends FirebaseActivity implements Handler.Callback {
 
     private static final String TAG = VotingActivity.class.getName();
     private Handler mHandler;
@@ -58,6 +68,7 @@ public class VotingActivity extends AppCompatActivity implements Handler.Callbac
     };
     private VoteFragment mVotingFragment;
     private BluetoothServer mBluetoothServer;
+    private StatsFragment mStatsFragment;
 
     private void showBTSnackbar() {
         Snackbar snackbar = Snackbar.make(findViewById(R.id.main_content), "Turn on BT!", Snackbar.LENGTH_INDEFINITE);
@@ -85,9 +96,13 @@ public class VotingActivity extends AppCompatActivity implements Handler.Callbac
      */
     private ViewPager mViewPager;
 
-    private ArrayList<String> mAnwers;
+    private List<String> mAnwers;
     private String mQuestion;
-    private int mDuration;
+    private long mDuration;
+    private String mPollId;
+    private Map<String, Integer> mVoters;
+    private Map<String, Integer> mVotes;
+    private int[] mVotesArray;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +116,8 @@ public class VotingActivity extends AppCompatActivity implements Handler.Callbac
         mAnwers = i.getStringArrayListExtra(Constants.ANSWERS);
         long dur = i.getLongExtra(Constants.DURATION, 0);
         mDuration = (int) dur;
+        mPollId = i.getStringExtra(Constants.POLL_ID);
+        mVotesArray = new int[mAnwers.size()];
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -165,10 +182,62 @@ public class VotingActivity extends AppCompatActivity implements Handler.Callbac
     private void requestVisibility() {
         Intent discoverableIntent =
                 new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300); //todo tyle ile sesja
+        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 3600); //todo tyle ile sesja
         startActivityForResult(discoverableIntent, Constants.DISCOVERABLE_REQ);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        signInToFirebase();
+    }
+
+    @Override
+    public void gatherDataFromFirebase(Task<AuthResult> task) {
+        mDatabase = FirebaseDatabase.getInstance().getReference("poll/" + mPollId);
+
+        mDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Question poll = dataSnapshot.getValue(Question.class);
+                Toast.makeText(getApplicationContext(), poll.getText(), Toast.LENGTH_LONG).show();
+                mAnwers = poll.getAnswers();
+                mQuestion = poll.getText();
+                mDuration = poll.getDuration();
+                mVoters = poll.getVoters();
+                mVotes = poll.getVotes();
+                if (mVotes != null) {
+                    for (Map.Entry<String, Integer> item : poll.getVotes().entrySet()) {
+                        int index = Integer.valueOf(item.getKey().substring(1));
+                        mVotesArray[index] = item.getValue();
+                    }
+                } else {
+                    mVotesArray[0] = 0;
+                }
+
+                mStatsFragment.updateView(mVotesArray);
+//                countVotes(poll.getVotes());
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void countVotes(Map<Integer, Integer> votes) {
+
+    }
+
+    @Override
+    public void saveVote(int position, HashMap<String, Integer> votes) {
+        mDatabase = FirebaseDatabase.getInstance().getReference("poll/" + mPollId);
+        mDatabase.child("voters").child(mAuth.getCurrentUser().getUid()).setValue(position);
+        int value = votes.get("P"+String.valueOf(position));
+        mDatabase.child("votes").child("P"+String.valueOf(position)).setValue(value);
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -182,14 +251,14 @@ public class VotingActivity extends AppCompatActivity implements Handler.Callbac
     }
 
     private void beginSession() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(mQuestion.length()).append(String.valueOf(mDuration).length()).append(mQuestion).append(mDuration);
-        StringBuilder answers = new StringBuilder();
-        for (String s : mAnwers) {
-            answers.append(s).append(",");
-        }
-        sb.append(answers);
-        mBluetoothServer = new BluetoothServer(mBluetoothAdapter, mHandler, this, sb.toString());
+//        StringBuilder sb = new StringBuilder();
+//        sb.append(mQuestion.length()).append(String.valueOf(mDuration).length()).append(mQuestion).append(mDuration);
+//        StringBuilder answers = new StringBuilder();
+//        for (String s : mAnwers) {
+//            answers.append(s).append(",");
+//        }
+//        sb.append(answers);
+        mBluetoothServer = new BluetoothServer(mBluetoothAdapter, mHandler, this, mPollId);
         mVotingFragment.setupCounter();
     }
 
@@ -214,6 +283,12 @@ public class VotingActivity extends AppCompatActivity implements Handler.Callbac
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        mBluetoothServer.cancel();
     }
 
     @Override
@@ -245,18 +320,23 @@ public class VotingActivity extends AppCompatActivity implements Handler.Callbac
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
+            Bundle bundle;
             switch (position) {
                 case 0:
-                    Bundle bundle = new Bundle();
-                    bundle.putStringArrayList(Constants.ANSWERS, mAnwers);
+                    bundle = new Bundle();
+                    bundle.putStringArrayList(Constants.ANSWERS, (ArrayList<String>) mAnwers);
                     bundle.putString(Constants.QUESTION, mQuestion);
-                    bundle.putInt(Constants.DURATION, mDuration);
+                    bundle.putInt(Constants.DURATION, (int) mDuration);
                     bundle.putBoolean(Constants.IS_CLIENT, true);
                     mVotingFragment = new VoteFragment();
                     mVotingFragment.setArguments(bundle);
                     return mVotingFragment;
                 case 1:
-                    return new StatsFragment();
+                    bundle = new Bundle();
+                    mStatsFragment = new StatsFragment();
+                    bundle.putIntArray(Constants.VOTES_ARRAY, mVotesArray);
+                    mStatsFragment.setArguments(bundle);
+                    return mStatsFragment;
             }
             return new VoteFragment();
         }
@@ -270,11 +350,11 @@ public class VotingActivity extends AppCompatActivity implements Handler.Callbac
 
     public void onNewVoter() {
 //        Toast.makeText(getApplicationContext(), "New voter", Toast.LENGTH_LONG).show();
-        mBluetoothServer.send(mQuestion, Constants.QUESTION_MSG);
-        StringBuilder answers = new StringBuilder();
-        for (String s : mAnwers) {
-            answers.append(s).append(",");
-        }
-        mBluetoothServer.send(answers.toString(), Constants.ANSWERS_MSG);
+//        mBluetoothServer.send(mQuestion, Constants.QUESTION_MSG);
+//        StringBuilder answers = new StringBuilder();
+//        for (String s : mAnwers) {
+//            answers.append(s).append(",");
+//        }
+//        mBluetoothServer.send(answers.toString(), Constants.ANSWERS_MSG);
     }
 }
