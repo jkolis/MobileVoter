@@ -46,8 +46,8 @@ public class StatsFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        mPieChart = (PieChart) view.findViewById(R.id.pie_chart);    }
-
+        mPieChart = (PieChart) view.findViewById(R.id.pie_chart);
+    }
 
 
     public void updateView(int[] votes) {
@@ -63,14 +63,13 @@ public class StatsFragment extends Fragment {
         for (Integer vote : mVotesArray) {
             entries.add(new PieEntry(vote));
         }
-
         PieDataSet dataSet = new PieDataSet(entries, "Votes");
 
         ArrayList<Integer> colors = new ArrayList<>();
 
-        for (int c : ColorTemplate.VORDIPLOM_COLORS)
+        for (int c : ColorTemplate.VORDIPLOM_COLORS) {
             colors.add(c);
-
+        }
         dataSet.setColors(colors);
 
         PieData data = new PieData(dataSet);

@@ -20,10 +20,11 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 import butterknife.BindView;
@@ -82,18 +83,32 @@ public class CreateSessionActivity extends FirebaseActivity {
         timeDurationPickerDialog.show();
     }
 
+    private String millisFromNow(long millis) {
+        Date now = Calendar.getInstance().getTime();
+        now.setTime(now.getTime() + millis);
+        return java.text.DateFormat.getDateTimeInstance().format(now);
+    }
+
     @Override
     public void gatherDataFromFirebase(Task<AuthResult> task) {
         mQuestionId = Utils.generateSaltString();
-        mQuestionEntity = new Question(mQuestionId, mQuestion, mAuth.getCurrentUser().getUid(),
-                mAnswers, mDurationMs, new HashMap<String, Integer>(), new HashMap<String, Integer>());
-        mDatabase = FirebaseDatabase
-                .getInstance()
-                .getReference(Constants.FIREBASE_POLL);
-        mDatabase.child(mQuestionId).setValue(mQuestionEntity).addOnCompleteListener(new OnCompleteListener<Void>() {
+        String expireTime = millisFromNow(mDurationMs);
+        mQuestionEntity = new Question(mQuestionId,
+                mQuestion,
+                mAuth.getCurrentUser().getUid(),
+                mAnswers,
+                mDurationMs,
+                expireTime,
+                new HashMap<String, Integer>(),
+                new HashMap<String, Integer>());
+        mDatabase = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_POLL);
+
+        mDatabase.child(mQuestionId).setValue(mQuestionEntity).addOnCompleteListener(
+                new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                Intent i = new Intent(CreateSessionActivity.this, VotingActivity.class);
+                Intent i = new Intent(CreateSessionActivity.this,
+                        VotingActivity.class);
                 i.putExtra(Constants.QUESTION, mQuestion);
                 i.putExtra(Constants.ANSWERS, mAnswers);
                 i.putExtra(Constants.DURATION, mDurationMs);
@@ -102,6 +117,8 @@ public class CreateSessionActivity extends FirebaseActivity {
             }
         });
         Toast.makeText(getApplicationContext(), "Saved", Toast.LENGTH_SHORT).show();
+
+
 //        Map<String, Object> newQuestion = new HashMap<>();
 //        Map<String, Object> i0 = constructChoice(item0);
 //        Map<String, Object> i1 = constructChoice(item1);
@@ -158,7 +175,7 @@ public class CreateSessionActivity extends FirebaseActivity {
 
     public void onCardClick(View view) {
         Log.d(TAG, "CLICKED!");
-        if(addEmptyAnswerCard()) {
+        if (addEmptyAnswerCard()) {
             Button btn = (Button) view;
             btn.setCompoundDrawablesWithIntrinsicBounds(R.drawable.baseline_radio_button_unchecked_24, 0, 0, 0);
         }
@@ -173,7 +190,7 @@ public class CreateSessionActivity extends FirebaseActivity {
     }
 
     private boolean validateAnswer(ArrayList<String> textInputEditTexts) {
-        return !(textInputEditTexts.get(textInputEditTexts.size()-1).equals(""));
+        return !(textInputEditTexts.get(textInputEditTexts.size() - 1).equals(""));
 
     }
 
@@ -182,7 +199,7 @@ public class CreateSessionActivity extends FirebaseActivity {
 
         getTextChildren(linearLayout);
 
-        if(!(validateAnswer(mAnswers))) {
+        if (!(validateAnswer(mAnswers))) {
             return false;
         }
 

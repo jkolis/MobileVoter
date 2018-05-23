@@ -104,17 +104,19 @@ public class VotingActivity extends FirebaseActivity implements Handler.Callback
     private Map<String, Integer> mVotes;
     private int[] mVotesArray;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_voting);
 
         ButterKnife.bind(this);
+//        millisFromNo
 
         Intent i = getIntent();
         mQuestion = i.getStringExtra(Constants.QUESTION);
         mAnwers = i.getStringArrayListExtra(Constants.ANSWERS);
-        long dur = i.getLongExtra(Constants.DURATION, 0);
+        long dur = i.getLongExtra(Constants.DURATION, 600000);
         mDuration = (int) dur;
         mPollId = i.getStringExtra(Constants.POLL_ID);
         mVotesArray = new int[mAnwers.size()];
@@ -182,7 +184,7 @@ public class VotingActivity extends FirebaseActivity implements Handler.Callback
     private void requestVisibility() {
         Intent discoverableIntent =
                 new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 3600); //todo tyle ile sesja
+        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 1200); //todo tyle ile sesja
         startActivityForResult(discoverableIntent, Constants.DISCOVERABLE_REQ);
     }
 

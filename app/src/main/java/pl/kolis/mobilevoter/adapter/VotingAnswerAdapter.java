@@ -29,13 +29,15 @@ public class VotingAnswerAdapter extends RecyclerView.Adapter<VotingAnswerAdapte
     private String TAG = VotingAnswerAdapter.class.getName();
     private boolean mVoted;
     private VoteFragment mFragment;
+    boolean mChecked;
 
-    public VotingAnswerAdapter(List<String> answers, Context context, VoteFragment fragment) {
+    public VotingAnswerAdapter(List<String> answers, Context context, VoteFragment fragment, boolean checked) {
         mAnswers = answers;
         mContext = context;
         mVoted = false;
         mSelectedPosition = -1;
         mFragment = fragment;
+        mChecked = checked;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

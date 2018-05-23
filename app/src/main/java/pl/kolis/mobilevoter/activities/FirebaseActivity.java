@@ -71,6 +71,7 @@ public class FirebaseActivity extends AppCompatActivity implements GoogleApiClie
 //                if (mAuth.getCurrentUser().isAnonymous()) {
                     Log.d(TAG, "Anonymously logged");
                     firebaseAuthAnonymous();
+
 //                } else {
 //                    Log.d("signInToFirebase", "Silent Google");
 //                    silentGoogleLogin();
@@ -169,11 +170,8 @@ public class FirebaseActivity extends AppCompatActivity implements GoogleApiClie
                         gatherDataFromFirebase(task);
                     }
                 });
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user != null) {
-//            Snackbar.make(,
-//                    "Logged in as " + user.getUid().substring(0,5), Snackbar.LENGTH_SHORT).show();
-        }
+
+
     }
 
     public void gatherDataFromFirebase(Task<AuthResult> task) {

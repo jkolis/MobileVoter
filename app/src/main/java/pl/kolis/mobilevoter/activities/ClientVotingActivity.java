@@ -14,12 +14,16 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +54,7 @@ public class ClientVotingActivity extends FirebaseActivity implements Handler.Ca
     private Map<String, Integer> mVoters;
     private HashMap<String, Integer> mVotes;
     private BluetoothClient mBluetoothClient;
+    private Date mExpireTime = Calendar.getInstance().getTime();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,12 +139,20 @@ public class ClientVotingActivity extends FirebaseActivity implements Handler.Ca
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Question poll = dataSnapshot.getValue(Question.class);
-                Toast.makeText(getApplicationContext(), poll.getText(), Toast.LENGTH_LONG).show();
                 mAnwers = poll.getAnswers();
                 mQuestion = poll.getText();
                 mDuration = poll.getDuration();
                 mVoters = poll.getVoters();
                 mVotes = poll.getVotes();
+
+                Toast.makeText(getApplicationContext(), poll.getText(), Toast.LENGTH_LONG).show();
+                if (poll.getExpireTime() != null) {
+                    try {
+                        mExpireTime.setTime(java.text.DateFormat.getDateTimeInstance().parse(poll.getExpireTime()).getTime());
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                }
                 mVotesArray = new int[mAnwers.size()];
                 if (mVotes != null) {
                     for (Map.Entry<String, Integer> item : poll.getVotes().entrySet()) {
@@ -151,7 +164,16 @@ public class ClientVotingActivity extends FirebaseActivity implements Handler.Ca
                 }
 
                 mStatsFragment.updateView(mVotesArray);
-                mVotingFragment.setView(mQuestion, mAnwers, mDuration, mVotes);
+                Date now = Calendar.getInstance().getTime();
+                if (mExpireTime != null) {
+                    mDuration = mExpireTime.getTime() - now.getTime();
+                }
+                String user = mAuth.getCurrentUser().getUid();
+                boolean checked = false;
+                if (mVoters != null && mVoters.containsKey(user)) {
+                    checked = true;
+                }
+                mVotingFragment.setView(mQuestion, mAnwers, mDuration, mVotes, checked);
                 mVotingFragment.setupCounter();
             }
 
@@ -167,8 +189,8 @@ public class ClientVotingActivity extends FirebaseActivity implements Handler.Ca
     public void saveVote(int position, HashMap<String, Integer> votes) {
         mDatabase.child("Voters").child(mAuth.getCurrentUser().getUid()).setValue(position);
         mDatabase.child("voters").child(mAuth.getCurrentUser().getUid()).setValue(position);
-        int value = votes.get("P"+position);
-        mDatabase.child("votes").child("P"+String.valueOf(position)).setValue(value);
+        int value = votes.get("P" + position);
+        mDatabase.child("votes").child("P" + String.valueOf(position)).setValue(value);
     }
 
     private void dealWithPoll(String msg) {
@@ -197,7 +219,7 @@ public class ClientVotingActivity extends FirebaseActivity implements Handler.Ca
             switch (position) {
                 case 0:
                     Bundle bundle = new Bundle();
-                    bundle.putStringArrayList(Constants.ANSWERS, (ArrayList)mAnwers);
+                    bundle.putStringArrayList(Constants.ANSWERS, (ArrayList) mAnwers);
                     bundle.putString(Constants.QUESTION, mQuestion);
                     bundle.putInt(Constants.DURATION, (int) mDuration);
                     mVotingFragment = new VoteFragment();

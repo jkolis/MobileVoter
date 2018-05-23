@@ -16,6 +16,8 @@ public class Question {
 
     private long duration;
 
+    private String expireTime;
+
     private HashMap<String, Integer> votes;
 
     Map<String, Integer> voters;
@@ -25,12 +27,13 @@ public class Question {
     }
 
     public Question(String questionId, String text, String user, List<String> answers, long duration,
-                    Map<String, Integer> voters, HashMap<String, Integer> votes) {
+                    String expireTime, Map<String, Integer> voters, HashMap<String, Integer> votes) {
         this.questionId = questionId;
         this.text = text;
         this.user = user;
         this.answers = answers;
         this.duration = duration;
+        this.expireTime = expireTime;
         this.voters = voters;
         this.votes = votes;
     }
@@ -89,5 +92,13 @@ public class Question {
 
     public void setVotes(HashMap<String, Integer> votes) {
         this.votes = votes;
+    }
+
+    public String getExpireTime() {
+        return expireTime;
+    }
+
+    public void setExpireTime(String expireTime) {
+        this.expireTime = expireTime;
     }
 }

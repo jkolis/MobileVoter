@@ -51,9 +51,7 @@ public class BluetoothServer {
     private class AcceptThread extends Thread {
         private final BluetoothServerSocket mmServerSocket;
 
-        public AcceptThread() {
-            // Use a temporary object that is later assigned to mmServerSocket
-            // because mmServerSocket is final.
+        AcceptThread() {
             BluetoothServerSocket tmp = null;
             try {
                 // MY_UUID is the app's UUID string, also used by the client code.
@@ -66,8 +64,7 @@ public class BluetoothServer {
         }
 
         public void run() {
-            BluetoothSocket socket = null;
-            // Keep listening until exception occurs or a socket is returned.
+            BluetoothSocket socket;
             while (true) {
                 try {
                     socket = mmServerSocket.accept();
@@ -78,20 +75,13 @@ public class BluetoothServer {
                 }
 
                 if (socket != null) {
-                    Log.d(TAG, "connected");
-                    // A connection was accepted. Perform work associated with
-                    // the connection in a separate thread.
+                    Log.d(TAG, "Connected");
                     try {
                         Log.d(TAG, "Starting to manage connection");
                         manageMyConnectedSocket(socket);
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
-//                    try {
-//                        mmServerSocket.close();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
                     break;
                 }
             }

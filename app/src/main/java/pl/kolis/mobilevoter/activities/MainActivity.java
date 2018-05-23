@@ -30,6 +30,32 @@ public class MainActivity extends FirebaseActivity {
         ButterKnife.bind(this);
         signInToFirebase();
 
+        FirebaseUser user = mAuth.getCurrentUser();
+
+        if (user != null) {
+            Snackbar.make(findViewById(R.id.activity_main),
+                    "Logged in as " + user.getUid().substring(0, 5), Snackbar.LENGTH_SHORT).show();
+        }
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+                    // User is signed in
+                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+//                    if (user.getEmail() != null) {
+//                        Snackbar.make(findViewById(R.id.activity_main),
+//                                "Logged in as " + user.getEmail(), Snackbar.LENGTH_SHORT).show();
+//                    } else {
+                        Snackbar.make(findViewById(R.id.activity_main),
+                                "Logged in as " + user.getUid().substring(0,5), Snackbar.LENGTH_SHORT).show();
+//                    }
+                } else {
+                    // User is signed out
+                    Log.d(TAG, "onAuthStateChanged:signed_out");
+                }
+            }
+        };
     }
 
     @OnClick(R.id.new_session_btn)

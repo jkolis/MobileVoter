@@ -15,7 +15,6 @@ import android.widget.TextView;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -59,7 +58,7 @@ public class VoteFragment extends Fragment {
             mQuestion = getArguments().getString(Constants.QUESTION);
             mDuration = getArguments().getInt(Constants.DURATION);
             mQuestionText.setText(mQuestion);
-            setupRecyclerView();
+            setupRecyclerView(false);
         }
 
 
@@ -76,8 +75,8 @@ public class VoteFragment extends Fragment {
         }
     }
 
-    public void setupRecyclerView() {
-        mAdapter = new VotingAnswerAdapter(mAnwers, getContext(), this);
+    public void setupRecyclerView(boolean checked) {
+        mAdapter = new VotingAnswerAdapter(mAnwers, getContext(), this, checked);
         LinearLayoutManager manager = new LinearLayoutManager(getContext());
         mAnswersRV.setLayoutManager(manager);
         mAnswersRV.setAdapter(mAdapter);
@@ -116,7 +115,7 @@ public class VoteFragment extends Fragment {
 //        if (value == null) {
 //            posString = "P" + posString;
 //        }
-        if(mVotes.get(posString) != null) {
+        if(mVotes!=null && mVotes.get(posString) != null) {
             mVotes.put(posString, mVotes.get(posString) + 1);
         } else {
             mVotes.put(posString, 1);
@@ -126,13 +125,13 @@ public class VoteFragment extends Fragment {
         fa.saveVote(position, mVotes);
     }
 
-    public void setView(String question, List<String> anwers, long duration, HashMap<String, Integer> votes) {
+    public void setView(String question, List<String> anwers, long duration, HashMap<String, Integer> votes, boolean checked) {
         mQuestion = question;
         mAnwers = anwers;
         mDuration = duration;
         mQuestionText.setText(mQuestion);
         mVotes = votes;
-        setupRecyclerView();
+        setupRecyclerView(checked);
     }
 
 }
