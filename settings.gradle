@@ -1,1 +1,1 @@
-include ':app', ':android-mutlibluetooth-library'
+include ':app'

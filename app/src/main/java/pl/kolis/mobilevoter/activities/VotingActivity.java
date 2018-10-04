@@ -164,6 +164,7 @@ public class VotingActivity extends FirebaseActivity implements Handler.Callback
             requestVisibility();
             beginSession();
         }
+        //TODO co to za hack?
         if (mBluetoothAdapter.getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
             //TODO
             Log.d(TAG, "BT not visible");

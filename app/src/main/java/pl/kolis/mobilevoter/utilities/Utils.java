@@ -8,6 +8,7 @@ import java.util.Random;
 
 public class Utils {
 
+    //checks if device is online
     public static boolean isOnline(Context context) {
         ConnectivityManager connMgr = (ConnectivityManager)
                 context.getSystemService(Context.CONNECTIVITY_SERVICE);

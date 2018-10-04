@@ -104,29 +104,6 @@ public class ClientVotingActivity extends FirebaseActivity implements Handler.Ca
 
     @Override
     public boolean handleMessage(Message message) {
-//        Toast.makeText(getApplicationContext(), message.toString(), Toast.LENGTH_LONG).show();
-//        String answers = new String((byte[]) message.obj).trim();
-//        if (message.what == Constants.MESSAGE_READ) {
-//            switch (message.arg1) {
-//                case Constants.QUESTION_MSG:
-//                    mQuestion = new String((byte[]) message.obj);
-//                    break;
-//                case Constants.ANSWERS_MSG:
-//                    String[] answersArray = answers.split(",");
-//                    mAnwers = new ArrayList<>(Arrays.asList(answersArray));
-//            }
-//        }
-//        String msg = new String((byte[]) message.obj).trim();
-//        int flag = Integer.valueOf(msg.substring(0, 1));
-//        switch (flag) {
-//            case Constants.POLL_MSG:
-//                dealWithPoll(msg);
-//                return false;
-//            case Constants.VOTE_MSG:
-//                int position = Integer.valueOf(msg.substring(1));
-//                onVoted(position);
-//
-//        }
         mPollId = new String((byte[]) message.obj).trim();
         setupPoll(mPollId);
 
@@ -191,19 +168,6 @@ public class ClientVotingActivity extends FirebaseActivity implements Handler.Ca
         mDatabase.child("voters").child(mAuth.getCurrentUser().getUid()).setValue(position);
         int value = votes.get("P" + position);
         mDatabase.child("votes").child("P" + String.valueOf(position)).setValue(value);
-    }
-
-    private void dealWithPoll(String msg) {
-//        int q = Integer.valueOf(msg.substring(1, 2));
-//        int d = Integer.valueOf(msg.substring(2, 3));
-//        mQuestion = msg.substring(3, q + 3);
-//        mDuration = Integer.valueOf(msg.substring(q + 3, q + 3 + d));
-//        String answers = msg.substring(q + 3 + d);
-//        String[] answersArray = answers.split(",");
-//        mAnwers = new List<>(Arrays.asList(answersArray));
-//        Log.d(TAG, "message " + msg);
-//        mVotingFragment.setView(mQuestion, mAnwers, mDuration);
-//        mVotingFragment.setupCounter();
     }
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {

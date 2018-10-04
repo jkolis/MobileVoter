@@ -72,14 +72,6 @@ public class FirebaseActivity extends AppCompatActivity implements GoogleApiClie
                     Log.d(TAG, "Anonymously logged");
                     firebaseAuthAnonymous();
 
-//                } else {
-//                    Log.d("signInToFirebase", "Silent Google");
-//                    silentGoogleLogin();
-//                }
-//            } else {
-//                Log.d("signInToFirebase", "Anon (Second else)");
-//                firebaseAuthAnonymous();
-//            }
         } else {
             Snackbar.make(findViewById(R.id.activity_main), "No Internet Connection", Snackbar.LENGTH_INDEFINITE)
                     .setAction("RETRY", new View.OnClickListener() {
@@ -91,73 +83,6 @@ public class FirebaseActivity extends AppCompatActivity implements GoogleApiClie
         }
     }
 
-    public void silentGoogleLogin() {
-        OptionalPendingResult<GoogleSignInResult> pendingResult = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
-        if (pendingResult != null) {
-            handleGooglePendingResult(pendingResult);
-        } else {
-
-        }
-    }
-
-    private void handleGooglePendingResult(OptionalPendingResult<GoogleSignInResult> pendingResult) {
-        if (pendingResult.isDone()) {
-            // There's immediate result available.
-            GoogleSignInResult signInResult = pendingResult.get();
-            onSilentSignInCompleted(signInResult);
-        } else {
-            // There's no immediate result ready,  waits for the async callback.
-            pendingResult.setResultCallback(new ResultCallback<GoogleSignInResult>() {
-                @Override
-                public void onResult(@NonNull GoogleSignInResult signInResult) {
-                    onSilentSignInCompleted(signInResult);
-                }
-            });
-        }
-    }
-
-    private void onSilentSignInCompleted(GoogleSignInResult signInResult) {
-        GoogleSignInAccount signInAccount = signInResult.getSignInAccount();
-        if (signInAccount != null) {
-            // you have a valid sign in account. Skip the login.
-            Log.d("SilentSignIn", "VALID SIGN IN");
-            firebaseAuthGoogle(signInAccount);
-        } else {
-            Log.d("SilentSignIn", "NOT A VALID SIGN IN");
-            // you don't have a valid sign in account. Eventually display the login page again
-        }
-    }
-
-    /**
-     * Connect to the Firebase database with Google account
-     * @param acct google account
-     */
-    public void firebaseAuthGoogle(GoogleSignInAccount acct) {
-        Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
-
-        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-        if (mAuth.getCurrentUser() != null && mAuth.getCurrentUser().getEmail() == null) {
-            mAuth.getCurrentUser().linkWithCredential(credential)
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            Log.d(TAG, "linkWithCredential:onComplete:" + task.isSuccessful());
-                            gatherDataFromFirebase(task);
-
-                        }
-                    });
-        } else {
-            mAuth.signInWithCredential(credential)
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
-                            gatherDataFromFirebase(task);
-                        }
-                    });
-        }
-
-    }
 
     /**
      * Connect to the Firebase database with anonymous account
@@ -175,30 +100,6 @@ public class FirebaseActivity extends AppCompatActivity implements GoogleApiClie
     }
 
     public void gatherDataFromFirebase(Task<AuthResult> task) {
-
-    }
-
-    public void leavePoll(String id) {
-        mDatabase = FirebaseDatabase.getInstance().getReference("Polls/" + id + "/Voters");
-
-        // Read from the database
-        mDatabase.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value(s) and again
-                // whenever data at this location is updated.
-                Map<String, Object> voters = (Map<String, Object>) dataSnapshot.getValue();
-                voters.remove(mAuth.getCurrentUser().getUid());
-
-            }
-
-            // Data listener cancelled
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w("data", "Failed to leave poll.", error.toException());
-            }
-        });
 
     }
 

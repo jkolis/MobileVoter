@@ -80,13 +80,6 @@ public class VoteFragment extends Fragment {
         LinearLayoutManager manager = new LinearLayoutManager(getContext());
         mAnswersRV.setLayoutManager(manager);
         mAnswersRV.setAdapter(mAdapter);
-//        ItemClickSupport.addTo(mAnswersRV)
-//                .setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
-//                    @Override
-//                    public void onItemClicked(RecyclerView recyclerView, int position, View v) {
-//                        Log.d(TAG, "Clicked position: " + position);
-//                    }
-//                });
     }
 
     public void setupCounter() {
@@ -111,10 +104,7 @@ public class VoteFragment extends Fragment {
 
     public void saveVote(int position) {
         String posString = String.valueOf( "P" + position);
-//        Integer value = mVotes.get(posString) + 1;
-//        if (value == null) {
-//            posString = "P" + posString;
-//        }
+
         if(mVotes!=null && mVotes.get(posString) != null) {
             mVotes.put(posString, mVotes.get(posString) + 1);
         } else {
