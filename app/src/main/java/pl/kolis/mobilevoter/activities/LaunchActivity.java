@@ -6,16 +6,22 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import butterknife.BindView;
 import pl.kolis.mobilevoter.R;
 
+/**
+ * Welcome screen
+ */
 public class LaunchActivity extends AppCompatActivity {
+
+    @BindView(R.id.login_btn) Button loginBtn;
+    @BindView(R.id.dont_btn) Button dontLogBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launch);
 
-        Button loginBtn = (Button) findViewById(R.id.login_btn);
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -24,8 +30,7 @@ public class LaunchActivity extends AppCompatActivity {
             }
         });
 
-        Button dont_btn = (Button) findViewById(R.id.dont_btn);
-        dont_btn.setOnClickListener(new View.OnClickListener() {
+        dontLogBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent i = new Intent(LaunchActivity.this, MainActivity.class);
